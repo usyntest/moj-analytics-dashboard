@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moj Analytics Dashboard - {{ data.search_string }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link
+      href="{{ url_for('static', filename='index.css') }}"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <h1 class="dashboard-heading">Moj Analytics Dashboard</h1>
+    <div class="dashboard">
+      <div class="section-container">
+        <div class="section-header">
+          <p class="section-heading">Latest Posts</p>
+        </div>
+
+        <div class="hot-posts-list">
+          {% for post in data.latest_posts %}
+          <div class="hot-post">
+            <div class="hot-post-user-profile">
+              <img
+                src="{{ post.user_data.user_profile_image }}"
+                class="hot-post-user-img"
+              />
+              <div class="hot-post-user-profile-content">
+                <p class="hot-post-user-name">{{ post.user_data.user_name }}</p>
+                <p class="hot-post-date">
+                  {{ post.post_data.time.strftime('%a, %d %b %Y %H:%M:%S') }}
+                </p>
+              </div>
+            </div>
+            <div class="hot-post-content">
+              <p class="hot-post-caption">{{ post.post_data.caption }}</p>
+              <img
+                src="{{ post.post_data.thumbnail }}"
+                class="hot-post-thumbnail"
+              />
+              <div class="hot-post-interactions">
+                <div class="hot-post-interaction">
+                  <img
+                    src="{{ url_for('static', filename='heart.png') }}"
+                    class="hot-post-icon"
+                  />
+                  <span class="hot-post-like-count"
+                    >{{ post.post_data.likes }}</span
+                  >
+                </div>
+                <div class="hot-post-interaction">
+                  <img
+                    src="{{ url_for('static', filename='chat.png') }}"
+                    class="hot-post-icon"
+                  />
+                  <span class="hot-post-comment-count"
+                    >{{ post.post_data.comments }}</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="multiple-section-container">
+        <div class="section-container">
+          <div class="section-header">
+            <p class="section-heading">Total Posts</p>
+            <h3 class="section-meta">{{ data.total_posts }}</h3>
+          </div>
+
+          <canvas id="categories-chart" width="100%"></canvas>
+        </div>
+        <div class="section-container">
+          <div class="section-header">
+            <p class="section-heading">Total Interactions</p>
+            <h3 class="section-meta">{{ data.total_interactions }}</h3>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th class="share-voice">Share Voice</th>
+                <th class="interactions">Posts</th>
+                <th class="posts">Interactions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for account in data.top_accounts %}
+              <tr>
+                <td>
+                  <div class="top-account-user-profile-content">
+                    <img
+                      src="{{ account.profile_img }}"
+                      class="top-account-user-profile-image"
+                    />
+                    <div class="top-account-user-profile">
+                      <p class="top-account-user-name">{{ account.name }}</p>
+                      <p class="top-account-username">
+                        @{{ account.username }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td class="share-voice">
+                  {% set percentage = account.interactions /
+                  data.total_interactions * 100 %} {% if percentage < 1 %}
+                  &lt;1% {% else %} {{ '%.0f' % percentage }}% {% endif %}
+                </td>
+                <td class="interactions">{{ account.posts }}</td>
+                <td class="posts">{{ account.interactions }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="multiple-section-container">
+        <div class="section-container">
+          <div class="section-header">
+            <p class="section-heading">Total Posts</p>
+            <h3 class="section-meta">{{ data.total_posts }}</h3>
+          </div>
+          <canvas id="languages-chart" width="100%"></canvas>
+        </div>
+        <div class="section-container">
+          <div class="section-header">
+            <p class="section-heading">Tag Interactions</p>
+            <h3 class="section-meta">{{ data.total_interactions }}</h3>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Tag Name</th>
+                <th class="share-voice">Share Voice</th>
+                <th class="interactions">Posts</th>
+                <th class="posts">Interactions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for tag in data.top_tags %}
+              <tr>
+                <td class="tag-name">#{{ tag.tag_name }}</td>
+                <td class="share-voice">
+                  {% set percentage = tag.interactions / data.total_interactions
+                  * 100 %} {% if percentage < 1 %} &lt;1% {% else %} {{ '%.0f' %
+                  percentage }}% {% endif %}
+                </td>
+                <td class="interactions">{{ tag.posts }}</td>
+                <td class="posts">{{ tag.interactions }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script>
+      const languagesData = JSON.parse(`{{ data.languages | tojson }}`);
+      const categoriesData = JSON.parse(`{{ data.categories | tojson }}`);
+
+      const langaugesCanvas = document
+        .getElementById("languages-chart")
+        .getContext("2d");
+      const languagesChart = new Chart(langaugesCanvas, {
+        type: "bar", // or 'line', 'pie', etc. depending on your library
+        data: languagesData,
+        options: {
+          title: {
+            display: true,
+            text: "Languages Used in Videos",
+          },
+        },
+      });
+
+      const categoriesCanvas = document
+        .getElementById("categories-chart")
+        .getContext("2d");
+      const categoriesChart = new Chart(categoriesCanvas, {
+        type: "doughnut", // or 'line', 'pie', etc. depending on your library
+        data: categoriesData,
+        options: {
+          title: {
+            display: true,
+            text: "Distribution of Categories",
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

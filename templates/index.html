@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moj Analytics Dashboard</title>
+    <link
+      href="{{ url_for('static', filename='index.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='loader.css') }}"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="home-page">
+      <h1 class="home-heading">Moj Analytics Dashboard</h1>
+      <p class="home-subheading">
+        Get analytics and insights and into the data of
+        <a href="mojapp.in">Moj App</a>
+      </p>
+      <form class="home-search-form" action="/dashboard" method="GET">
+        <input
+          type="text"
+          class="home-search-form-input"
+          name="q"
+          required
+          minlength="3"
+          placeholder="Enter a term to get analytics on"
+        />
+        <br />
+        <button class="home-search-form-submit-button">
+          Generate Dashboard
+        </button>
+      </form>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>

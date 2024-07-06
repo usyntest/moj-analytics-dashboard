@@ -35,7 +35,8 @@ python -m flask --app server run
 
 ## NOTE
 This project still needs some work like:
-- This is very slow due to multiple requests to the API, a friend of mine suggested using multi-threading.
+- ~~This is very slow due to multiple requests to the API, a friend of mine suggested using multi-threading.~~  
+I fixed the speed issue with the help of [@sujaldev](https://www.github.com/sujaldev) and concurrency off course.
 - There can be more work done in reverse engineering Moj's API, with more data it can be improved.
 - Using data related to tags can be beneficial in extracting more insights.
 

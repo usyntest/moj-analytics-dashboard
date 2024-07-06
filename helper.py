@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime
+import concurrent.futures
 
 headers = {
     'user-agent': 'Moj/24.16.1 (in.mohalla.video; build:20240626164318; iOS 17.5.1) Alamofire/5.9.0',
@@ -37,20 +38,23 @@ class Dashboard:
             '#DC143C'   # Crimson
         ]
 
-
     def get_dataset_from_moj(self):
-        for offset in range(1000 // 8):
-            response = requests.get("https://moj-apis.sharechat.com/search-service/v1.0.0/all-search", params= {
-                "lang": "English",
-                "postOffset": offset * 8,
-                "searchString": self.search_string,
-                "variant": "variant-1"
-            }, headers=headers)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            for offset in range(1000 // 8):
+                executor.submit(self.process_page, offset)
 
-            for post in response.json().get("postData", {}).get("postCards", []):
-                self.create_dashboard_data(self.create_post_dict(post))
+    def process_page(self, offset):
+        response = requests.get("https://moj-apis.sharechat.com/search-service/v1.0.0/all-search", params={
+            "lang": "English",
+            "postOffset": offset * 8,
+            "searchString": self.search_string,
+            "variant": "variant-1"
+        }, headers=headers)
 
-        
+        for post in response.json().get("postData", {}).get("postCards", []):
+            self.create_dashboard_data(self.create_post_dict(post)) 
+
+
     def create_dashboard_data(self, post):
 
         # Total no. of posts
